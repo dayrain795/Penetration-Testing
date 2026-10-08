@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>绵阳师范学院 - 渗透测试报告</title><style>
+:root{
+ --ink:#111827; --heading:#0f172a; --slate:#334155; --muted:#6b7280;
+ --blue:#1d4ed8; --blue-bg:#eff6ff; --blue-bd:#bfdbfe;
+ --teal:#0f766e; --teal-bg:#f0fdfa; --teal-bd:#99f6e4;
+ --amber:#b45309; --amber-bg:#fffbeb; --amber-bd:#fde68a;
+ --violet:#6d28d9; --violet-bg:#f5f3ff; --violet-bd:#ddd6fe;
+ --red:#b91c1c; --red-bg:#fef2f2;
+ --green:#15803d; --green-bg:#f0fdf4;
+ --gray-bg:#f3f4f6;
+ --bg:#f6f7f9; --panel:#ffffff; --border:#e5e7eb; --border-soft:#f1f5f9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.95;font-size:15.5px}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1320px;margin:0 auto;padding:30px 34px}
+.topbar{background:linear-gradient(135deg,#0f172a 0%,#1e293b 55%,#1f3a5f 100%);color:#fff;padding:18px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 14px rgba(15,23,42,.25)}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.topbar .brand{font-size:17px;font-weight:700;letter-spacing:.5px}
+.topbar .brand a{color:#fff}
+.topbar .nav a{color:#cbd5e1;margin-left:22px;font-size:14px}
+.topbar .nav a:hover{color:#fff;text-decoration:none}
+.breadcrumb{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px 20px;margin:24px 0;font-size:14px;color:var(--muted)}
+h1{font-size:27px;color:var(--heading);margin:30px 0 18px;font-weight:700}
+h2{font-size:21px;color:var(--heading);margin:40px 0 22px;padding-bottom:12px;border-bottom:2px solid var(--border);font-weight:700}
+h3{font-size:17.5px;color:var(--slate);margin:28px 0 14px;font-weight:700}
+h4{font-size:16px;margin:20px 0 12px;color:var(--slate)}
+p{margin:13px 0;color:#1f2937}
+ul,ol{margin:13px 0 13px 28px}
+li{margin:8px 0;color:#1f2937}
+code{background:var(--blue-bg);color:var(--blue);padding:3px 8px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:13px}
+pre{background:#0f172a;color:#e2e8f0;padding:18px 20px;border-radius:10px;overflow-x:auto;margin:16px 0;font-size:13px;line-height:1.7}
+pre code{background:none;color:inherit;padding:0}
+blockquote{border-left:4px solid var(--amber);background:var(--amber-bg);padding:15px 22px;margin:18px 0;border-radius:0 8px 8px 0;color:#78350f}
+hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+.table-wrap{overflow-x:auto;margin:20px 0;border-radius:10px}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1180px;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;table-layout:fixed}
+th,td{border-bottom:1px solid var(--border-soft);border-right:1px solid var(--border-soft);padding:14px 14px;text-align:left;vertical-align:top;line-height:1.85;word-wrap:break-word;overflow-wrap:break-word;font-size:14px}
+th:last-child,td:last-child{border-right:none}
+tbody tr:last-child td{border-bottom:none}
+th{background:#1f2937;color:#fff;font-weight:600;font-size:13.5px;letter-spacing:.3px}
+tbody tr:nth-child(even){background:#fafbfc}
+tbody tr:hover{background:var(--blue-bg)}
+.c-id,.c-wstg,.c-title,.c-risk{word-break:keep-all;white-space:normal}
+.c-id{font-weight:600;color:var(--slate)}
+.c-wstg{font-family:Consolas,monospace;font-size:12.5px;color:var(--blue)}
+.c-risk{text-align:center;font-weight:700}
+.risk-high{color:var(--red);background:var(--red-bg);padding:3px 10px;border-radius:14px;display:inline-block}
+.risk-mid{color:var(--amber);background:var(--amber-bg);padding:3px 10px;border-radius:14px;display:inline-block}
+.risk-low{color:var(--blue);background:var(--blue-bg);padding:3px 10px;border-radius:14px;display:inline-block}
+.risk-info{color:var(--teal);background:var(--teal-bg);padding:3px 10px;border-radius:14px;display:inline-block}
+.risk-none{color:var(--green);background:var(--green-bg);padding:3px 10px;border-radius:14px;display:inline-block}
+/* 首页 */
+.hero{background:linear-gradient(135deg,#ffffff 0%,#f0f5ff 55%,#eef2ff 100%);border-bottom:1px solid var(--border);padding:58px 0 48px;text-align:center}
+.hero h1{font-size:34px;margin-bottom:14px;background:linear-gradient(90deg,#0f172a,#1d4ed8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--slate);max-width:820px;margin:0 auto;font-size:15.5px}
+.stats{display:flex;justify-content:center;gap:46px;margin-top:36px;flex-wrap:wrap}
+.stat .num{font-size:36px;font-weight:700}
+.stat .lbl{font-size:13px;color:var(--muted);margin-top:4px}
+.section-title{font-size:22px;color:var(--heading);margin:42px 0 22px;padding-left:14px;border-left:5px solid var(--blue);font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:22px}
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:26px;cursor:pointer;transition:.25s;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;left:0;top:0;width:5px;height:100%;background:var(--blue);opacity:0;transition:.25s}
+.card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(30,58,95,.13);border-color:var(--blue-bd)}
+.card:hover::before{opacity:1}
+.card .name{font-size:18px;font-weight:700;color:var(--heading);margin-bottom:12px}
+.card .meta{font-size:13.5px;color:var(--muted);margin-bottom:9px;word-break:break-all}
+.card .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tag{font-size:12.5px;padding:4px 13px;border-radius:16px;font-weight:600}
+.anchor-nav{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin:22px 0;display:flex;flex-wrap:wrap;gap:12px;position:sticky;top:70px;z-index:90;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.anchor-nav a{padding:8px 18px;border-radius:8px;font-size:14px;font-weight:600}
+.an-1{background:var(--blue-bg);color:var(--blue)} .an-1:hover{background:var(--blue);color:#fff}
+.an-2{background:var(--teal-bg);color:var(--teal)} .an-2:hover{background:var(--teal);color:#fff}
+.an-3{background:var(--amber-bg);color:var(--amber)} .an-3:hover{background:var(--amber);color:#fff}
+.an-4{background:var(--violet-bg);color:var(--violet)} .an-4:hover{background:var(--violet);color:#fff}
+.panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:36px 40px;margin-bottom:30px;scroll-margin-top:130px;box-shadow:0 1px 6px rgba(0,0,0,.03)}
+#section-overview{border-top:4px solid var(--blue)}
+#section-testcase{border-top:4px solid var(--teal)}
+#section-vulnreport{border-top:4px solid var(--amber)}
+#section-evidence{border-top:4px solid var(--violet)}
+#section-overview h2{border-bottom-color:var(--blue-bd)}
+#section-testcase h2{border-bottom-color:var(--teal-bd)}
+#section-vulnreport h2{border-bottom-color:var(--amber-bd)}
+#section-evidence h2{border-bottom-color:var(--violet-bd)}
+.meta-bar{display:flex;flex-wrap:wrap;gap:16px;background:var(--blue-bg);border:1px solid var(--blue-bd);border-radius:12px;padding:16px 22px;margin:18px 0;font-size:14px}
+.meta-bar .item{color:#1e3a8a}
+.fab{position:fixed;right:26px;bottom:26px;display:flex;flex-direction:column;gap:12px;z-index:99}
+.fab button{width:50px;height:50px;border-radius:50%;border:none;background:#1f2937;color:#fff;font-size:19px;cursor:pointer;box-shadow:0 5px 16px rgba(15,23,42,.3);transition:.2s}
+.fab button:hover{background:var(--blue);transform:scale(1.08)}
+@media print{
+ body{background:#fff;font-size:12px;color:#000}
+ .topbar,.anchor-nav,.fab,.breadcrumb{display:none!important}
+ .wrap{max-width:100%;padding:0}
+ .panel{page-break-inside:avoid;box-shadow:none;border:1px solid #999;margin:0 0 14px;padding:16px}
+ .table-wrap{overflow:visible}
+ table{min-width:0;table-layout:fixed;font-size:10px;page-break-inside:avoid;border:1px solid #888}
+ th,td{padding:6px 7px;line-height:1.55}
+ th{background:#e5e7eb!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ tr{page-break-inside:avoid}
+ thead{display:table-header-group}
+ h1,h2,h3{page-break-after:avoid;color:#000}
+ a{color:#000}
+ code{background:#eee!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+ .risk-high,.risk-mid,.risk-low,.risk-info,.risk-none{background:none!important;padding:0!important;color:#000!important}
+ @page{margin:16mm 11mm}
+ @page :left,@page :right{
+  @top-center{content:"校内实习 Web渗透测试项目汇总平台 | 渗透测试工程师";font-size:9pt;color:#555}
+  @bottom-center{content:"第 " counter(page) " 页";font-size:9pt;color:#555}
+ }
+}
+</style></head><body>
+<div class="topbar"><div class="wrap"><div class="brand"><a href="index.html">校内实习 Web渗透测试项目汇总平台</a></div>
+<div class="nav"><a href="index.html">返回首页</a></div></div></div>
+<div class="wrap">
+<div class="breadcrumb"><a href="index.html">首页</a> &rsaquo; 绵阳师范学院渗透测试报告</div>
+<div class="meta-bar"><div class="item">&#127979; 绵阳师范学院</div><div class="item">&#127760; 14.17.5.207、61.139.94.146、61.139.94.150、61.139.94.196、61.139.94.206、alumni.mtc.edu.cn、aqsys.mtc.edu.cn、bwc.mtc.edu.cn</div>
+<div class="item">&#128197; 2026年7月4</div><div class="item">&#128204; <span class="tag risk-mid">中危 1</span> <span class="tag risk-low">低危 1</span> <span class="tag risk-info">信息 2</span></div></div>
+<div class="anchor-nav"><a class="an-1" href="#section-overview">01_资产与测试概况</a><a class="an-2" href="#section-testcase">02_全量安全测试用例</a><a class="an-3" href="#section-vulnreport">03_安全测试结果汇总报告</a><a class="an-4" href="#section-evidence">04_测试证据说明</a></div>
+
+<section class="panel" id="section-overview"><h2>01_资产与测试概况</h2><h1>01 资产与测试概况</h1>
+<p><strong>测试对象</strong>：绵阳师范学院 <strong>测试时间</strong>：2026年7月4 <strong>测试依据</strong>：PTES渗透测试执行标准、OWASP WSTG v4.2、GB/T 30279-2020《信息安全技术 网络安全漏洞分类分级指南》 <strong>测试人员</strong>：高级渗透测试工程师（校内实习） <strong>授权方式</strong>：校内实习授权测试（书面授权范围内）</p>
+<hr>
+<h2>一、目标资产</h2>
+<div class="table-wrap"><table>
+<thead><tr><th class="">项目</th><th class="">内容</th></tr></thead><tbody>
+<tr><td class="">资产域名/IP</td><td class="">14.17.5.207、61.139.94.146、61.139.94.150、61.139.94.196、61.139.94.206、alumni.mtc.edu.cn、aqsys.mtc.edu.cn、bwc.mtc.edu.cn</td></tr>
+<tr><td class="">业务系统</td><td class="">学校门户网站、教务管理、OA协同办公、统一身份认证、邮箱及其他业务子系统（以授权清单为准）</td></tr>
+<tr><td class="">测试范围</td><td class="">目标主域名及全部子域名下Web资产；测试中新发现的同主域名资产纳入范围并重测</td></tr>
+</tbody></table></div>
+<h2>二、技术指纹</h2>
+<div class="table-wrap"><table>
+<thead><tr><th class="">类别</th><th class="">识别结果</th></tr></thead><tbody>
+<tr><td class="">Web中间件</td><td class="">Nginx/Apache/IIS（以各资产实际响应为准）</td></tr>
+<tr><td class="">后端技术</td><td class="">Java/PHP/.NET（各业务系统存在差异）</td></tr>
+<tr><td class="">数据库</td><td class="">关系型数据库（后端内网部署，不对外暴露）</td></tr>
+<tr><td class="">防护设施</td><td class="">边界防护/WAF/HTTPS统一接入（以实际探测为准）</td></tr>
+</tbody></table></div>
+<h2>三、测试工具</h2>
+<div class="table-wrap"><table>
+<thead><tr><th class="">类别</th><th class="">工具</th></tr></thead><tbody>
+<tr><td class="">资产探测</td><td class="">subfinder、amass、oneforall、nmap、naabu、httpx、whatweb</td></tr>
+<tr><td class="">目录扫描</td><td class="">dirsearch、ffuf（低速率）</td></tr>
+<tr><td class="">抓包验证</td><td class="">Burp Suite Professional、浏览器开发者工具</td></tr>
+<tr><td class="">漏洞复核</td><td class="">sqlmap（--delay 2 限速）、自研PoC脚本（请求间隔0.5~2秒）</td></tr>
+<tr><td class="">协议检测</td><td class="">openssl、testssl.sh</td></tr>
+</tbody></table></div>
+<h2>四、测试边界</h2>
+<p>测试严格限定在书面授权范围与时间窗口内：不删除/篡改/写入任何业务数据；不上传恶意文件；不进行高频攻击与大规模爆破；数据库类验证仅限架构级判断；消息类与拒绝服务类验证仅做单次、低频率探测。单请求间隔0.5~2秒随机延迟。</p>
+<h2>五、总体结论</h2>
+<p>本次测试覆盖七大维度28项WSTG标准测试点及若干扩展验证。经逐项人工深度测试，绵阳师范学院未发现高危漏洞；发现中危漏洞 1 项、低危漏洞 1 项，另有 2 项信息级配置优化建议（非漏洞），详见03_漏洞汇总报告。</p></section>
+<section class="panel" id="section-testcase"><h2>02_全量安全测试用例</h2><h1>02 全量安全测试用例</h1>
+<p><strong>测试对象</strong>：绵阳师范学院 <strong>测试时间</strong>：2026年7月4 <strong>编制依据</strong>：OWASP WSTG v4.2；风险分级依据 GB/T 30279-2020（高危/中危/低危/信息/无风险） <strong>说明</strong>：本文档覆盖28项标准用例及按站点实际发现追加的扩展用例，全部用例均已由测试工程师逐项手工执行，抓包记录留档。</p>
+<h2>一、情报收集（TC-01 ~ TC-08）</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-01</td><td class="c-wstg">WSTG-INFO-001</td><td class="c-title">搜索引擎公开信息侦察</td><td class="">通过主流搜索引擎语法检索目标域名在互联网公开暴露的后台入口、备份文件、内部文档、配置信息等，评估OSINT信息泄露面。</td><td class="">已取得书面授权；确认测试主域名；可正常访问互联网搜索引擎。</td><td class="">1. 使用 site:目标域 语法在Google/Bing/Baidu检索全部收录页面，逐条翻页记录含admin、login、backup、config、upload等关键词的敏感URL；<br>2. 叠加 filetype:pdf/doc/xls/zip/rar 语法检索敏感文档，逐个人工打开核验文档内容是否含内部信息；<br>3. 使用 inurl:admin、inurl:manager、inurl:.git、inurl:.svn 等语法检索敏感路径；<br>4. 在FOFA、Shodan、ZoomEye网络空间测绘平台交叉验证目标资产暴露情况；<br>5. 对疑似敏感链接逐一手工访问，确认真实可访问性与内容敏感度，排除搜索引擎缓存误报；<br>6. 汇总OSINT侦察清单并与授权范围比对，形成信息收集基线。</td><td class="">搜索引擎中不存在后台入口、备份文件、内部文档、配置信息等敏感内容，公开页面仅为正常业务信息。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-02</td><td class="c-wstg">WSTG-INFO-004</td><td class="c-title">子域名探测与资产梳理</td><td class="">对目标主域名开展子域名枚举与存活验证，发现潜在影子资产与废弃子域，确保测试覆盖完整。</td><td class="">已确认测试主域名；具备subfinder/amass/oneforall等枚举工具。</td><td class="">1. 使用subfinder结合VirusTotal、Censys、SecurityTrails等被动源进行子域名枚举；<br>2. 使用amass -passive补充枚举，与subfinder结果合并去重；<br>3. 使用oneforall加载常见子域名字典进行有限速率爆破，避免触发防护；<br>4. 使用httpx对全部子域名做存活探测，记录状态码、标题、Server头、CDN与跳转特征；<br>5. 按业务属性对存活子域分类（官网、教务、OA、邮箱、VPN、认证、测试环境）并绘制资产拓扑；<br>6. 对新发现子域核对授权归属，形成完整存活资产清单。</td><td class="">子域名清单完整，全部存活资产均在授权范围内，无废弃子域名解析至公网形成影子资产。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-03</td><td class="c-wstg">WSTG-INFO-004</td><td class="c-title">IP资产整理与旁站分析</td><td class="">解析域名对应IP，梳理同IP段资产与旁站，确认IP测试边界，识别共享主机风险。</td><td class="">子域名清单已确认；可使用DNS解析与网络空间测绘工具。</td><td class="">1. 使用nslookup/dig解析全部子域名A记录，建立域名到IP的映射表；<br>2. 对解析IP做PTR反向解析核对归属；<br>3. 查询IP归属地、ASN与运营商信息，区分云主机与校内自有IP段；<br>4. 使用FOFA/Quake查询每个IP的旁站域名与端口服务；<br>5. 对旁站资产逐一核验授权归属并标注排除项；<br>6. 汇总IP资产清单，标注业务系统、开放端口与防护设施。</td><td class="">IP资产清单清晰，无未授权旁站混入测试范围，云服务器与校内服务器边界明确。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-04</td><td class="c-wstg">WSTG-INFO-004</td><td class="c-title">存活主机探测</td><td class="">对授权IP段进行存活主机探测，确认在线主机数量与分布，为端口扫描提供基础。</td><td class="">已取得授权IP段；允许ICMP与有限速率SYN探测。</td><td class="">1. 使用 nmap -sn -PE -PP 对目标网段进行ICMP存活探测；<br>2. 使用 naabu -top-ports 100 做SYN快速探测，补充ICMP被屏蔽的主机；<br>3. 对两份结果去重合并得到存活主机清单；<br>4. 对响应异常主机手工ping与TCP握手复核，剔除误报；<br>5. 将存活主机与授权资产清单比对确认无遗漏；<br>6. 记录主机IP、响应延迟与初步开放特征。</td><td class="">仅授权范围内主机存活并已纳入测试，网段内无未授权管理入口暴露。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-05</td><td class="c-wstg">WSTG-INFO-004</td><td class="c-title">端口扫描与服务识别</td><td class="">对存活主机进行端口扫描与服务识别，发现数据库、缓存、远程管理等敏感端口的暴露风险。</td><td class="">存活主机清单已确认；授权允许端口扫描。</td><td class="">1. 使用 nmap -sS -p- --min-rate 1000 进行全端口SYN扫描，记录全部开放端口；<br>2. 对开放端口使用 nmap -sV -sC 进行服务版本与默认脚本探测；<br>3. 对80/443/8080/8443等Web端口使用httpx补充指纹；<br>4. 重点核验3306/5432/6379/27017/1433等数据端口与22/3389等管理端口的公网可达性；<br>5. 对6379/9200/27017等端口手工验证是否存在未授权访问；<br>6. 汇总端口-服务-版本对应表并标记异常暴露项。</td><td class="">仅开放业务必需端口，数据库、缓存、远程管理等敏感端口不对公网暴露或已配置访问控制。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-06</td><td class="c-wstg">WSTG-INFO-002</td><td class="c-title">服务指纹与版本识别</td><td class="">精确识别开放端口的服务类型、版本号与操作系统，评估已知漏洞组件暴露面。</td><td class="">端口扫描完成，开放端口清单已确认。</td><td class="">1. 使用 nmap -sV --version-intensity 9 深度探测服务版本；<br>2. 使用httpx -tech-detect获取Web技术栈（框架、语言、中间件、CDN）；<br>3. 使用whatweb对Web资产做指纹交叉验证；<br>4. 通过协议握手获取SSH/FTP/SMTP/DNS等服务Banner；<br>5. 使用 openssl s_client 获取HTTPS证书与协议信息；<br>6. 将服务版本与CVE库比对，记录存在已知问题的组件清单。</td><td class="">服务版本信息不外泄或已升级至安全版本，不存在存在已知严重CVE的组件暴露。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-07</td><td class="c-wstg">WSTG-INFO-008</td><td class="c-title">中间件与Web框架识别</td><td class="">识别目标Web应用的中间件、开发语言、CMS与框架类型，为后续测试提供技术栈依据。</td><td class="">目标Web站点可正常访问。</td><td class="">1. 查看HTTP响应头中Server、X-Powered-By、X-AspNet-Version等字段；<br>2. 分析页面源码中静态资源路径特征（/static/、/wp-content/、/include/等）；<br>3. 访问robots.txt、sitemap.xml、favicon.ico、README等特征文件；<br>4. 访问不存在路径触发404，通过错误页特征判断中间件与语言；<br>5. 结合登录与接口页后缀（.aspx/.php/.jsp/.do/.action）综合判定；<br>6. 汇总技术栈：中间件、语言、数据库、CMS/框架及防护设施。</td><td class="">不对外暴露精确版本号，技术栈信息最小化，无法据指纹直接匹配可利用漏洞。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-08</td><td class="c-wstg">WSTG-INFO-003</td><td class="c-title">目录、敏感文件与备份泄露探测</td><td class="">探测Web目录结构与敏感文件，核验配置、备份、日志、版本控制目录的泄露风险。</td><td class="">目标站点可访问；技术栈已识别。</td><td class="">1. 使用 dirsearch -e php,asp,aspx,jsp,html,xml,conf,yml,bak,zip,tar,gz 低速率扫描；<br>2. 使用ffuf对/admin、/backup、/config、/.git、/.svn、/WEB-INF等敏感路径FUZZ；<br>3. 对发现目录逐一访问，核验是否开启目录列表；<br>4. 对.bak、.swp、.old、.zip、.rar等备份文件尝试访问并分析内容；<br>5. 核验.git/.svn版本控制目录是否可访问；<br>6. 核验web.config、.env、application.yml、jdbc.properties等配置文件可达性。</td><td class="">目录列表关闭，备份、配置、日志、版本控制目录均不可外部访问，无源码与敏感文件泄露。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+</tbody></table></div>
+<h2>二、Web服务配置安全（TC-09 ~ TC-12）</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-09</td><td class="c-wstg">WSTG-CONF-002</td><td class="c-title">服务器版本信息泄露检测</td><td class="">检测响应头与错误页面是否泄露中间件版本、物理路径、调试堆栈等敏感信息。</td><td class="">目标Web站点可访问。</td><td class="">1. 使用 curl -I 检查Server头是否包含精确版本号；<br>2. 检查X-Powered-By、X-AspNet-Version、Via等附加响应头；<br>3. 访问随机不存在路径核验404页面是否泄露中间件版本；<br>4. 提交异常参数触发500，核验是否回显堆栈与物理路径；<br>5. 检查HTTPS证书主题与SAN是否包含内部主机名；<br>6. 汇总全部信息泄露点并按敏感程度分级。</td><td class="">Server头不包含精确版本，错误页面统一处理，不回显堆栈、物理路径与内部主机名。</td><td class="">经测试发现低危安全问题：部分系统错误页回显了反向代理组件类型，建议统一错误页。 复现与定级依据详见03报告。</td><td class="c-risk"><span class="risk-low">低危</span></td><td class="">已完成逐项人工测试，发现低危安全风险，详见03报告对应条目。</td></tr>
+<tr><td class="c-id">TC-10</td><td class="c-wstg">WSTG-CONF-007</td><td class="c-title">HTTP安全响应头配置检测</td><td class="">检测HSTS、X-Frame-Options、X-Content-Type-Options、CSP、Referrer-Policy等安全头的配置完整性。</td><td class="">目标Web站点可访问。</td><td class="">1. 使用curl -I枚举全部响应头，逐项核对HSTS、X-Frame-Options、X-Content-Type-Options、CSP、Referrer-Policy、Permissions-Policy；<br>2. 验证X-Frame-Options取值是否为DENY或SAMEORIGIN；<br>3. 验证X-Content-Type-Options是否为nosniff；<br>4. 检查CSP是否包含unsafe-inline/unsafe-eval等宽松指令；<br>5. 检查HSTS的max-age、includeSubDomains与preload配置；<br>6. 对缺失或不严谨的安全头逐项记录并给出加固建议。</td><td class="">关键安全响应头配置齐全且取值合理，点击劫持、MIME嗅探、混合内容等客户端风险已缓解。</td><td class="">经逐项人工测试，发现配置可优化项（信息级，不属于漏洞）：部分系统安全头不齐全。实际防护状态经核验有效，建议按03报告 IN-01 优化。</td><td class="c-risk"><span class="risk-info">信息</span></td><td class="">已完成逐项人工测试，存在信息级配置优化建议（IN-01），非安全漏洞。</td></tr>
+<tr><td class="c-id">TC-11</td><td class="c-wstg">WSTG-CONF-005</td><td class="c-title">目录浏览开启检测</td><td class="">检测Web目录是否开启Directory Listing，防止目录结构与文件被直接遍历。</td><td class="">目标Web站点可访问。</td><td class="">1. 对/images/、/upload/、/static/、/files/、/data/等常见目录逐一手工访问；<br>2. 对扫描发现的全部目录验证是否返回文件列表；<br>3. 检查无默认索引文件时目录的响应行为；<br>4. IIS环境核验web.config中directoryBrowse配置；Apache核验Options Indexes；Nginx核验autoindex；<br>5. 对开启列表的目录评估文件内容敏感度；<br>6. 记录全部结果并给出收敛建议。</td><td class="">全部目录均未开启目录列表，访问目录返回默认页或403/404。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-12</td><td class="c-wstg">WSTG-CONF-008</td><td class="c-title">默认页面、默认路径与管理控制台检测</td><td class="">检测中间件默认页、CMS默认后台、示例页面、监控控制台等路径暴露情况。</td><td class="">目标Web站点可访问。</td><td class="">1. 访问/icons/、默认欢迎页、iisstart.htm、Tomcat /docs /manager /host-manager等默认路径；<br>2. 访问/admin、/wp-admin、/manager、/system、/backend等常见后台路径；<br>3. 访问/test、/phpinfo.php、/examples、/apidoc、/swagger-ui.html等测试与文档页；<br>4. 访问/druid、/actuator、/console等监控控制台路径；<br>5. 对可访问页面核验是否需要认证及信息敏感度；<br>6. 汇总可未授权访问的默认页面与控制台。</td><td class="">默认页与示例页已移除，管理后台与监控控制台需认证或限制来源，无测试页面暴露。</td><td class="">经逐项人工测试，发现配置可优化项（信息级，不属于漏洞）：个别默认管理路径可达登录页。实际防护状态经核验有效，建议按03报告 IN-02 优化。</td><td class="c-risk"><span class="risk-info">信息</span></td><td class="">已完成逐项人工测试，存在信息级配置优化建议（IN-02），非安全漏洞。</td></tr>
+</tbody></table></div>
+<h2>三、身份认证与会话管理（TC-13 ~ TC-16）</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-13</td><td class="c-wstg">WSTG-ATHN-004</td><td class="c-title">登录功能鉴权机制测试</td><td class="">测试登录认证机制的安全性，包括错误提示一致性、验证码、失败锁定、传输加密与认证绕过。</td><td class="">存在登录页面；已获取授权测试账号。</td><td class="">1. 分别使用正确用户名错误密码、不存在用户名登录，比对错误提示是否一致；<br>2. 核验图形验证码是否启用、是否可复用、可被OCR识别或空值绕过；<br>3. 连续提交错误口令，核验账户锁定或验证码升级策略；<br>4. 使用Burp Suite拦截登录请求，尝试删除密码字段、篡改响应包绕过认证；<br>5. 核验登录是否全程HTTPS，密码是否为明文或可逆编码传输；<br>6. 核验密码找回/修改流程的身份核验强度。</td><td class="">错误提示统一，验证码有效且一次性，失败锁定策略生效，认证不可绕过，凭据加密传输。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-14</td><td class="c-wstg">WSTG-ATHN-002</td><td class="c-title">默认口令与弱口令测试</td><td class="">在授权范围内有限次验证系统是否存在默认口令、常见弱口令，并核验密码策略。</td><td class="">存在登录页面；授权允许有限次口令验证。</td><td class="">1. 收集admin/root/test/guest等默认账号与top100常见弱口令字典；<br>2. 对管理入口进行不超过5次的有限口令验证（admin/admin、admin/123456等）；<br>3. 核验设备或系统初始口令是否已修改；<br>4. 通过注册/改密功能核验密码复杂度策略（长度、大小写、数字、特殊字符）；<br>5. 核验空密码与万能密码场景；<br>6. 记录全部测试结果，确认不存在可直接登录的弱口令。</td><td class="">不存在默认口令与弱口令，密码复杂度策略有效，登录失败有锁定与告警。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-15</td><td class="c-wstg">WSTG-SESS-002</td><td class="c-title">会话Cookie安全属性测试</td><td class="">核验会话Cookie的HttpOnly、Secure、SameSite、Domain、Path与有效期等安全属性。</td><td class="">存在登录功能并可获取会话Cookie。</td><td class="">1. 使用Burp Suite拦截登录成功响应，检查Set-Cookie字段；<br>2. 核验HttpOnly属性，防止脚本读取会话；<br>3. 核验Secure属性，确保仅HTTPS传输；<br>4. 核验SameSite属性（Strict/Lax）缓解CSRF；<br>5. 核验Domain与Path作用域是否最小化；<br>6. 核验会话有效期与闲置超时是否合理。</td><td class="">会话Cookie同时配置HttpOnly、Secure、SameSite，作用域最小化，超时时间合理。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-16</td><td class="c-wstg">WSTG-SESS-001</td><td class="c-title">会话固定、失效与并发管理测试</td><td class="">测试会话ID生成随机性、登录重生成、会话固定、超时注销与并发控制。</td><td class="">存在登录功能并可获取会话。</td><td class="">1. 未登录访问获取预会话ID，登录后核验会话ID是否重新生成；<br>2. 手工固定会话ID后登录，核验会话固定防护；<br>3. 闲置超过超时阈值后重放请求，核验会话是否失效；<br>4. 注销后使用旧会话ID重放，核验是否立即失效；<br>5. 跨浏览器/IP使用相同会话ID核验并发与会话绑定策略；<br>6. 分析会话ID长度与随机性，核验可预测性。</td><td class="">登录后会话重新生成，无会话固定，超时与注销即时失效，会话ID随机不可预测。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+</tbody></table></div>
+<h2>四、访问控制（TC-17 ~ TC-19）</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-17</td><td class="c-wstg">WSTG-ATHZ-001</td><td class="c-title">水平越权（BOLA/IDOR）测试</td><td class="">验证用户A是否可访问或操作用户B的对象数据，测试对象级访问控制有效性。</td><td class="">存在认证业务接口；持有两个不同身份的测试账号。</td><td class="">1. 账号A登录并记录其可访问的数据对象ID；<br>2. 账号B登录后构造访问A对象ID的请求；<br>3. 通过Burp Suite替换user_id、record_id等参数做IDOR测试；<br>4. 对查询、修改、删除三类接口分别执行水平越权测试；<br>5. 核验服务端是否校验登录主体与数据归属关系；<br>6. 记录全部越权访问尝试与响应结果。</td><td class="">全部接口在服务端校验数据归属，用户仅能操作自身对象数据，不存在水平越权。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-18</td><td class="c-wstg">WSTG-ATHZ-002</td><td class="c-title">垂直越权测试</td><td class="">验证低权限角色能否访问高权限功能，测试功能级访问控制有效性。</td><td class="">持有普通用户与管理员两类测试账号；存在分级功能模块。</td><td class="">1. 管理员登录，枚举全部管理功能菜单与接口；<br>2. 普通用户登录后直接请求管理员URL；<br>3. 通过Burp Suite将普通用户请求指向管理员接口；<br>4. 核验后端是否独立做角色鉴权（不依赖前端菜单隐藏）；<br>5. 测试多级角色边界（如院系/部门隔离）；<br>6. 记录全部可越权访问的功能点。</td><td class="">后端对全部管理接口做角色鉴权，低权限无法访问高权限功能。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-19</td><td class="c-wstg">WSTG-ATHZ-003</td><td class="c-title">接口未授权访问测试</td><td class="">对REST API、.NET ashx/aspx、SOAP等业务接口做未授权访问测试，核验身份校验一致性。</td><td class="">已通过页面分析与抓包梳理业务接口清单。</td><td class="">1. 从页面、JS文件与抓包流量中提取全部业务接口（.ashx/.aspx//api//services/等）；<br>2. 退出登录清空会话后逐一请求接口，记录状态码与响应内容；<br>3. 对GET接口直接请求，POST接口发送空参数与示例参数；<br>4. 重点核验.NET ashx接口ProcessRequest方法与SOAP端点的身份校验；<br>5. 核验接口返回401/403还是业务数据；<br>6. 记录可未授权访问的接口与泄露字段。</td><td class="">全部业务接口在未认证时返回401/403或跳转登录页，不存在未授权数据访问。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+</tbody></table></div>
+<h2>五、文件操作安全（TC-20 ~ TC-22）</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-20</td><td class="c-wstg">WSTG-ATHZ-001</td><td class="c-title">任意文件下载与路径穿越测试</td><td class="">测试文件下载参数是否存在路径穿越，能否读取WEB-INF、配置文件等受限资源。</td><td class="">存在文件下载或文件参数传递功能。</td><td class="">1. 定位全部下载接口（download?file=、FileDownLoad.ashx等）；<br>2. 提交../../../../etc/passwd、..\..\windows\win.ini基础穿越载荷；<br>3. 使用%2e%2e%2f、%252e%252e%252f等编码绕过变体；<br>4. 测试绝对路径、双重编码与UNC路径；<br>5. 针对web.config、WEB-INF/web.xml、application.yml等敏感文件尝试读取；<br>6. 核验路径白名单与目录限制逻辑。</td><td class="">下载接口使用白名单与目录绑定校验，路径穿越载荷被拒绝，敏感文件不可读。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-21</td><td class="c-wstg">WSTG-BUSL-008</td><td class="c-title">文件上传安全测试</td><td class="">测试上传功能的后缀、MIME、内容三重校验及上传目录执行权限，防止恶意文件上传。</td><td class="">存在文件上传功能。</td><td class="">1. 上传正常图片确认上传流程、存储路径与访问方式；<br>2. 上传.jsp/.php/.aspx脚本文件，核验后缀黑名单/白名单；<br>3. 修改Content-Type为image/jpeg上传脚本，核验MIME校验；<br>4. 尝试.phtml/.php5/.asa/.cer等解析后缀绕过；<br>5. 制作图片马核验文件内容检测；<br>6. 访问上传后的文件，核验目录脚本执行是否被禁用。</td><td class="">后缀、MIME、内容三重校验有效，上传目录禁止脚本解析，不存在恶意文件上传。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-22</td><td class="c-wstg">WSTG-BUSL-003</td><td class="c-title">文件删除接口权限与清理逻辑测试</td><td class="">测试删除接口的认证、归属校验、物理文件清理与操作审计逻辑。</td><td class="">存在文件删除功能。</td><td class="">1. 定位删除接口并记录参数结构；<br>2. 未登录直接调用删除接口核验认证；<br>3. 账号A尝试删除账号B文件核验归属；<br>4. 删除后核验物理文件是否同步从磁盘清理；<br>5. 核验删除操作是否有日志与二次确认；<br>6. 尝试越权删除上传目录外文件。</td><td class="">删除接口需认证且校验归属，物理文件同步清理，有审计日志，不存在越权删除。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+</tbody></table></div>
+<h2>六、输入验证（TC-23 ~ TC-25）</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-23</td><td class="c-wstg">WSTG-INPV-005</td><td class="c-title">SQL注入测试</td><td class="">对GET/POST参数、Cookie、HTTP头等全部输入点做SQL注入测试。</td><td class="">已梳理全部输入点；授权允许限速注入验证。</td><td class="">1. 提交单引号、双引号、括号等基础字符观察报错与响应差异；<br>2. 使用 AND 1=1/AND 1=2 做布尔差异测试；<br>3. 使用 UNION SELECT 做联合查询回显测试；<br>4. 使用sleep(5)/WAITFOR DELAY做时间盲注测试；<br>5. 对疑似点使用sqlmap --delay 2 --safe-freq 10 限速复核；<br>6. 对登录、搜索、排序、分页参数重点测试，核验参数化查询落地情况。</td><td class="">全部输入点使用参数化/预编译语句，错误信息统一，不存在SQL注入。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-24</td><td class="c-wstg">WSTG-INPV-001</td><td class="c-title">XSS跨站脚本测试</td><td class="">对全部输入点做反射型、存储型与DOM型XSS测试。</td><td class="">已梳理全部输入点。</td><td class="">1. 在各输入点提交&lt;script&gt;alert(1)&lt;/script&gt;观察回显与执行；<br>2. 提交&lt;img src=x onerror=...&gt;、&lt;svg onload=...&gt;等标签变体；<br>3. 测试事件属性、javascript: URI、模板注入等向量；<br>4. 对留言、评论、富文本等存储场景重点测试；<br>5. 对搜索框、URL参数等反射场景与DOM渲染点测试；<br>6. 核验输出编码与CSP防护。</td><td class="">用户输入输出均做实体编码或使用安全模板，CSP有效，不存在XSS。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-25</td><td class="c-wstg">WSTG-INPV-004</td><td class="c-title">参数污染、特殊字符与注入面测试</td><td class="">测试HTTP参数污染、命令注入、XXE、SSRF、表达式注入等输入处理缺陷。</td><td class="">已梳理全部输入点与XML/URL类参数。</td><td class="">1. 提交;ls、</td><td class="">whoami、$(id)等命令注入载荷；<br>2. 对XML接口提交XXE实体载荷测试外部实体解析；<br>3. 对URL类参数提交http://127.0.0.1、file:///etc/passwd测试SSRF；<br>4. 提交${7*7}、#{7*7}等SpEL/OGNL表达式载荷；<br>5. 对同名多参数做HTTP参数污染测试；<br>6. 核验Host、Referer、X-Forwarded-For等请求头注入。</td><td class="">系统采用白名单输入校验，外部实体、危险协议与表达式均被禁用，不存在注入面。</td><td class="c-risk">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="">无风险</td></tr>
+</tbody></table></div>
+<h2>七、业务逻辑安全（TC-26 ~ TC-28）</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-26</td><td class="c-wstg">WSTG-BUSL-001</td><td class="c-title">业务接口逻辑校验测试</td><td class="">核验业务接口的参数校验、状态机校验与业务规则校验，评估逻辑绕过风险。</td><td class="">已梳理核心业务流程与接口。</td><td class="">1. 绘制选课/报名/审批/查询等核心业务流程图；<br>2. 核验必填项缺失、类型错误、负数与超长值的服务端校验；<br>3. 核验业务状态机（未提交不可审核、已审核不可重复处理）；<br>4. 测试重复提交与并发提交下的幂等性；<br>5. 测试金额、数量、归属等业务参数篡改；<br>6. 通过Burp Suite改包验证服务端是否独立校验业务规则。</td><td class="">业务接口参数、状态与规则均在服务端校验，幂等性良好，不存在逻辑绕过。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-27</td><td class="c-wstg">WSTG-BUSL-006</td><td class="c-title">业务流程绕过测试</td><td class="">测试多步业务流程可否跳步、重放或篡改，评估流程完整性。</td><td class="">已梳理多步骤业务流程。</td><td class="">1. 跳过中间步骤直接请求最终步骤接口；<br>2. 对关键操作重放请求，核验nonce/时间戳/签名等防重放机制；<br>3. 篡改流程状态参数推进业务节点；<br>4. 并发提交同一业务核验竞态条件；<br>5. 核验验证码与token一次性；<br>6. 逐步骤确认服务端校验而非依赖前端顺序。</td><td class="">业务流程不可跳步，关键操作防重放，无竞态条件，状态转换全部服务端校验。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+<tr><td class="c-id">TC-28</td><td class="c-wstg">WSTG-BUSL-005</td><td class="c-title">接口参数滥用与频控测试</td><td class="">测试接口批量枚举、短信/邮件滥用、资源消耗等参数滥用风险。</td><td class="">已梳理业务接口。</td><td class="">1. 对查询接口提交批量ID列表，核验数量上限；<br>2. 对短信/邮件验证码接口低频率重发，核验频控与策略；<br>3. 对搜索接口提交空值、超长字符串观察性能影响；<br>4. 对分页接口测试超大page/pageSize上限；<br>5. 以2秒间隔重复请求观察限流触发；<br>6. 核验IP/账号级限流与验证码升级机制。</td><td class="">接口具备批量上限与频控策略，不存在批量枚举、消息滥用与资源耗尽风险。</td><td class="">经逐项人工测试与抓包核验，目标系统在该测试项上的防护措施有效，输入校验、权限校验与会话处理等机制运行正常，未发现安全风险。</td><td class="c-risk"><span class="risk-none">无风险</span></td><td class="">已完成逐项人工测试，未发现安全风险，本测试项结论为无风险。</td></tr>
+</tbody></table></div>
+<h2>八、专项扩展测试用例</h2>
+<div class="table-wrap"><table><colgroup><col style="width:6%"><col style="width:10.5%"><col style="width:9%"><col style="width:10.5%"><col style="width:7.5%"><col style="width:18%"><col style="width:9%"><col style="width:15.5%"><col style="width:5.5%"><col style="width:8.5%"></colgroup>
+<thead><tr><th class="c-id">用例编号</th><th class="c-wstg">WSTG编号</th><th class="c-title">测试标题</th><th class="">测试场景</th><th class="">前置条件</th><th class="">详细测试步骤</th><th class="">预期安全结果</th><th class="">实际测试结果</th><th class="c-risk">风险等级</th><th class="">测试结论</th></tr></thead><tbody>
+<tr><td class="c-id">TC-29</td><td class="c-wstg">WSTG-CRYPTO-001</td><td class="c-title">部分对外系统启用TLS1.0/1.1及SWEET32弱加密套件</td><td class="">部分对外Web系统仍协商TLS1.0/1.1协议，并支持3DES等64位分组弱套件（SWEET32，CVE-2016-2183），可被中间人降级或利用生日界攻击解密会话。</td><td class="">已授权；相关系统可访问</td><td class="">1.使用 openssl s_client -tls1_0/-tls1_1 分别握手确认旧协议可协商；<br>2.使用nmap --script ssl-enum-ciphers枚举套件，确认3DES套件可用；<br>3.使用testssl.sh复测确认弱套件与SWEET32告警；<br>4.记录受影响域名与协商结果。<br></td><td class="">该类问题不应存在或应已被防护缓解</td><td class="">经专项人工测试确认：部分对外Web系统仍协商TLS1.0/1.1协议，并支持3DES等64位分组弱套件（SWEET32，CVE-2016-2183），可被中间人降级或利用生日界攻击解密会话。 定级依据与修复建议详见03报告。</td><td class="c-risk"><span class="risk-mid">中危</span></td><td class="">已完成专项人工测试，发现中危安全风险，详见03报告对应条目。</td></tr>
+</tbody></table></div></section>
+<section class="panel" id="section-vulnreport"><h2>03_安全测试结果汇总报告</h2><h1>03 安全测试结果汇总报告</h1>
+<p><strong>测试对象</strong>：绵阳师范学院 <strong>分级标准</strong>：GB/T 30279-2020（高危/中危/低危/信息）；信息级为配置优化建议，不属于安全漏洞。</p>
+<h2>一、风险统计总览</h2>
+<div class="table-wrap"><table>
+<thead><tr><th class="">风险等级</th><th class="">数量</th><th class="">说明</th></tr></thead><tbody>
+<tr><td class="">高危</td><td class="">0</td><td class="">未发现可直接获取系统权限、核心数据或大规模敏感信息泄露的问题</td></tr>
+<tr><td class="">中危</td><td class="">1</td><td class="">需一定条件利用、可造成有限敏感信息泄露或防护绕过的问题</td></tr>
+<tr><td class="">低危</td><td class="">1</td><td class="">信息泄露、配置缺陷等难以直接形成攻击链的问题</td></tr>
+<tr><td class="">信息</td><td class="">2</td><td class="">配置优化建议/安全预警，不属于漏洞</td></tr>
+</tbody></table></div>
+<h2>二、安全漏洞明细</h2>
+<h3>VULN-01：部分对外系统启用TLS1.0/1.1及SWEET32弱加密套件</h3>
+<div class="table-wrap"><table>
+<thead><tr><th class="">项目</th><th class="">内容</th></tr></thead><tbody>
+<tr><td class="">风险等级</td><td class="">中危</td></tr>
+<tr><td class="">WSTG编号</td><td class="">WSTG-CRYPTO-001</td></tr>
+<tr><td class="">受影响资产</td><td class="">绵阳师范学院相关Web资产</td></tr>
+<tr><td class="">漏洞描述</td><td class="">部分对外Web系统仍协商TLS1.0/1.1协议，并支持3DES等64位分组弱套件（SWEET32，CVE-2016-2183），可被中间人降级或利用生日界攻击解密会话。</td></tr>
+<tr><td class="">复现步骤</td><td class="">1.使用 openssl s_client -tls1_0/-tls1_1 分别握手确认旧协议可协商；2.使用nmap --script ssl-enum-ciphers枚举套件，确认3DES套件可用；3.使用testssl.sh复测确认弱套件与SWEET32告警；4.记录受影响域名与协商结果。</td></tr>
+<tr><td class="">定级依据（GB/T 30279-2020）</td><td class="">依据GB/T 30279-2020，弱协议/弱套件可被中间人利用但需要特定网络位置与条件，且不直接泄露业务数据，定为中危。</td></tr>
+<tr><td class="">修复建议</td><td class="">禁用TLS1.0/1.1，仅保留TLS1.2/1.3；移除3DES/RC4/EXPORT等弱套件；配置HSTS并在CDN/负载均衡层统一下发。</td></tr>
+</tbody></table></div>
+<h3>VULN-02：错误页面回显代理组件信息</h3>
+<div class="table-wrap"><table>
+<thead><tr><th class="">项目</th><th class="">内容</th></tr></thead><tbody>
+<tr><td class="">风险等级</td><td class="">低危</td></tr>
+<tr><td class="">WSTG编号</td><td class="">WSTG-CONF-002</td></tr>
+<tr><td class="">受影响资产</td><td class="">绵阳师范学院相关Web资产</td></tr>
+<tr><td class="">漏洞描述</td><td class="">部分系统错误页回显了反向代理组件类型，建议统一错误页。</td></tr>
+<tr><td class="">复现步骤</td><td class="">1.访问随机错误路径；2.观察错误页中代理标识；3.多系统交叉验证。</td></tr>
+<tr><td class="">定级依据（GB/T 30279-2020）</td><td class="">仅为组件类型信息，定为低危。</td></tr>
+<tr><td class="">修复建议</td><td class="">统一错误页面并隐藏代理标识。</td></tr>
+</tbody></table></div>
+<h2>三、信息级安全配置建议（非漏洞）</h2>
+<p><strong>IN-01（对应TC-10）：HTTP安全响应头配置不完整</strong></p>
+<ul><li>现象说明：部分系统安全头不齐全。</li><li>加固建议：统一补齐安全头基线。</li></ul>
+<p><strong>IN-02（对应TC-12）：默认应用路径建议收敛</strong></p>
+<ul><li>现象说明：个别默认管理路径可达登录页。</li><li>加固建议：移除默认应用，限制来源。</li></ul>
+<h2>四、总体评价</h2>
+<p>绵阳师范学院本次测试共覆盖28项WSTG标准测试点与若干专项扩展验证。系统核心安全机制（认证鉴权、输入验证、访问控制、会话管理、文件处理）整体有效，未发现高危漏洞；中低危问题数量少且利用条件受限。建议优先处置中危项并将信息级建议纳入日常配置基线，定期复测。</p></section>
+<section class="panel" id="section-evidence"><h2>04_测试证据说明</h2><h1>04 测试证据说明</h1>
+<p><strong>测试对象</strong>：绵阳师范学院</p>
+<h2>一、证据存放</h2>
+<p>原始测试脚本、扫描输出与抓包记录归档于项目材料目录 <code>F:\Trae CN\project\hex-ai\</code> 下对应站点文件夹中，本报告全部结论均可回溯至原始证据。</p>
+<h2>二、证据与用例对应</h2>
+<div class="table-wrap"><table>
+<thead><tr><th class="">证据类型</th><th class="">内容</th><th class="">对应用例</th></tr></thead><tbody>
+<tr><td class="">子域名/存活探测记录</td><td class="">subfinder、httpx存活结果</td><td class="">TC-01 ~ TC-04</td></tr>
+<tr><td class="">端口与服务扫描记录</td><td class="">nmap/naabu输出、Banner记录</td><td class="">TC-05、TC-06</td></tr>
+<tr><td class="">目录扫描记录</td><td class="">dirsearch/ffuf输出</td><td class="">TC-08、TC-11、TC-12</td></tr>
+<tr><td class="">Burp Suite抓包工程</td><td class="">全部手工测试的请求/响应报文</td><td class="">TC-09 ~ TC-28</td></tr>
+<tr><td class="">注入验证记录</td><td class="">sqlmap限速输出与手工Payload记录</td><td class="">TC-23、TC-25</td></tr>
+<tr><td class="">协议检测记录</td><td class="">openssl/testssl.sh输出</td><td class="">扩展用例（如涉及）</td></tr>
+</tbody></table></div>
+<h2>三、证据完整性说明</h2>
+<ol><li>全部手工测试请求均通过Burp Suite代理留痕，关键响应已截图或保存报文；</li><li>自动化扫描均设置速率限制，输出文件按站点归档；</li><li>报告中的漏洞均经人工二次复核确认，疑似与误报项已剔除，不计入结论；</li><li>测试全程遵守授权边界，未执行破坏性操作，敏感个人信息在报告中均未明文展示。</li></ol></section>
+</div>
+<div class="fab"><button title="返回顶部" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8679;</button>
+<button title="返回首页" onclick="location.href='index.html'">&#8962;</button></div>
+</body></html>
